@@ -46,7 +46,7 @@
   </div>
 
   <script>
-    var PAGE_ID = "tongtai.fresheen";
+    var PAGE_ID = "tongtai.fresheen"; // Thay tương ứng cho các file khác
     var ua = navigator.userAgent || "";
 
     function tryOpen() {
@@ -54,24 +54,30 @@
       var isAndroid = /Android/i.test(ua);
 
       if (isIOS) {
-        // iOS deep link
         window.location.href = "fb-messenger://user-thread/" + PAGE_ID;
-        setTimeout(function() {
-          window.location.href = "https://m.me/" + PAGE_ID;
-        }, 1500);
       } else if (isAndroid) {
-        // Android: dùng m.me trực tiếp với username
-        window.location.href = "https://m.me/" + PAGE_ID;
+        // Dùng Intent thay vì m.me trực tiếp để "ép" mở app Messenger trên Android
+        window.location.href = "intent://user/" + PAGE_ID + "#Intent;scheme=fb-messenger;package=com.facebook.orca;end";
       } else {
-        // Desktop fallback
         window.location.href = "https://m.me/" + PAGE_ID;
       }
+      
+      // Sau 2 giây nếu không mở được app thì mới chuyển hướng sang web m.me
+      setTimeout(function() {
+          window.location.href = "https://m.me/" + PAGE_ID;
+      }, 2000);
     }
 
-    // Chạy ngay sau khi trang load
-    window.addEventListener("load", function() {
-      setTimeout(tryOpen, 300);
+    // THAY ĐỔI: Chờ người dùng click vào nút thay vì chạy tự động
+    document.getElementById("fallback-btn").addEventListener("click", function(e) {
+      e.preventDefault();
+      tryOpen();
     });
-  </script>
+
+    // Vẫn giữ tự động nhưng tăng thời gian chờ để tránh bị Zalo chặn ngay lập tức
+    window.addEventListener("load", function() {
+      setTimeout(tryOpen, 1000);
+    });
+</script>
 </body>
 </html>
